@@ -1,3 +1,4 @@
+import { useDeferredValue } from 'react';
 import { createAtom, useAtom } from '../atomStore';
 import { generateId } from '../helpers';
 
@@ -111,11 +112,14 @@ export const todoStoreReducers = {
 export const useToDoStore = () => {
   const {value} = useAtom(tasksStore);
 
-  return { ...value, reducers: todoStoreReducers };
+  const tasks = useDeferredValue(value.tasks);
+  
+  return { tasks, reducers: todoStoreReducers };
 };
 
 export const useTasksDoneStore = () => {
   const {value} = useAtom(tasksDoneStore);
+  const tasksDone = useDeferredValue(value.tasksDone);
 
-  return { ...value, reducers: tasksDoneReducers };
+  return { tasksDone, reducers: tasksDoneReducers };
 };
