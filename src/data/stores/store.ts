@@ -17,77 +17,105 @@ interface ToDoStore {
   deleteEverything: () => void;
 }
 
-interface InitialState {
+interface InitialTasksState {
   tasks: Task[];
+}
+
+interface InitialTasksDoneState {
   tasksDone: Task[];
 }
 
-const initialState: InitialState = {
+const initialState: InitialTasksState = {
   tasks: [],
+};
+
+const initialTasksDoneState: InitialTasksDoneState = {
   tasksDone: [],
 };
 
-const todoStore = createAtom(initialState);
+const tasksDoneStore = createAtom(initialTasksDoneState);
 
-export const todoStoreReducers = {
-  createTask: (title: string) => {
-    const { tasks, tasksDone } = todoStore.get();
-    const newTask: Task = {
-      id: generateId(),
-      title,
-      createdAt: Date.now(),
-    };
+const tasksStore = createAtom(initialState);
 
-    todoStore.set({
-      tasks: [newTask].concat(tasks),
-      tasksDone,
+
+export const tasksDoneReducers = {
+  removeTask: (id: string) => {
+    const { tasksDone } = tasksDoneStore.get();
+    tasksDoneStore.set({
+      tasksDone: tasksDone.filter((task) => task.id !== id),
     });
   },
 
-  updateTask: (id: string, title: string) => {
-    const { tasks, tasksDone } = todoStore.get();
-    todoStore.set({
-      tasks: tasks.map((task) => ({
-        ...task,
-        title: task.id === id ? title : task.title,
-      })),
-      tasksDone,
-    });
-  },
-
+  
   createTaskDone: () => {
-    const { tasks, tasksDone } = todoStore.get();
+    const { tasksDone } = tasksDoneStore.get();
     const newTask = {
       id: generateId(),
       title: 'Fake repeated title',
       createdAt: Date.now(),
     };
 
-    todoStore.set({
-      tasks,
+    tasksDoneStore.set({
       tasksDone: [newTask].concat(tasksDone),
-    });
-  },
-
-  removeTask: (id: string) => {
-    const { tasks, tasksDone } = todoStore.get();
-
-    todoStore.set({
-      tasks: tasks.filter((task) => task.id !== id),
-      tasksDone: [...tasksDone].concat(tasks.filter((task) => task.id === id)),
-    });
-  },
-
-  deleteEverything: () => {
-    todoStore.set({
-      tasks: [],
-      tasksDone: [],
     });
   },
 };
 
+export const todoStoreReducers = {
+  createTask: (title: string) => {
+    const { tasks } = tasksStore.get();
+    const newTask: Task = {
+      id: generateId(),
+      title,
+      createdAt: Date.now(),
+    };
+
+    tasksStore.set({
+      tasks: [newTask].concat(tasks),
+    });
+  },
+
+  updateTask: (id: string, title: string) => {
+    const { tasks } = tasksStore.get();
+    tasksStore.set({
+      tasks: tasks.map((task) => ({
+        ...task,
+        title: task.id === id ? title : task.title,
+      })),
+    });
+  },
+
+  removeTask: (id: string) => {
+    const { tasks } = tasksStore.get();
+
+    const { tasksDone } = tasksDoneStore.get();
+
+    tasksDoneStore.set({
+      tasksDone:  [...tasksDone].concat(tasks.filter((task) => task.id === id)),
+    });
+
+    tasksStore.set({
+      tasks: tasks.filter((task) => task.id !== id),
+    });
+  },
+
+  deleteEverything: () => {
+    tasksStore.set({
+      tasks: [],
+    });
+    tasksDoneStore.set({ tasksDone: [] })
+  },
+};
+
+
 export const useToDoStore = () => {
-  const {value} = useAtom(todoStore);
+  const {value} = useAtom(tasksStore);
 
   return { ...value, reducers: todoStoreReducers };
+};
+
+export const useTasksDoneStore = () => {
+  const {value} = useAtom(tasksDoneStore);
+
+  return { ...value, reducers: tasksDoneReducers };
 };

@@ -1,9 +1,9 @@
 import styles from './index.module.scss';
-import { todoStoreReducers, useToDoStore } from '../../data/stores/store';
+import { useTasksDoneStore } from '../../data/stores/store';
 import { useEffect } from 'react';
 
 export const ToDoListDone: React.FC = () => {
-  const { tasksDone, reducers } = useToDoStore();
+  const { tasksDone, reducers } = useTasksDoneStore();
 
   useEffect(() => {
     console.log('🚀 => 👍 ==>> ToDoListDone ==>> Line #7 ==>> ');
